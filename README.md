@@ -1,0 +1,1 @@
+# Rabbitmq Package for Golang
