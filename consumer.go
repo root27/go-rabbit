@@ -6,15 +6,14 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func Receive(conn *amqp.Connection, queue string, callback func([]byte)) {
+func Receive(conn *amqp.Connection, queue string) (<-chan any, error) {
 
 	ch, err := conn.Channel()
 	if err != nil {
 
 		log.Fatal(err)
-		return
+		return nil, err
 	}
-	defer ch.Close()
 
 	q, err := ch.QueueDeclare(
 		queue, // name
@@ -27,7 +26,7 @@ func Receive(conn *amqp.Connection, queue string, callback func([]byte)) {
 	if err != nil {
 
 		log.Fatal(err)
-		return
+		return nil, err
 	}
 
 	msgs, err := ch.Consume(
@@ -42,22 +41,23 @@ func Receive(conn *amqp.Connection, queue string, callback func([]byte)) {
 	if err != nil {
 
 		log.Fatal(err)
-		return
+		return nil, err
 	}
 
-	var forever chan struct{}
+	resChan := make(chan any)
 
 	go func() {
 
 		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
 
-			callback(d.Body)
+			resChan <- d.Body
 		}
+
+		conn.Close()
+		ch.Close()
+		close(resChan)
 	}()
 
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-
-	<-forever
+	return resChan, nil
 
 }

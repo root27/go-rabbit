@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -21,8 +22,16 @@ func main() {
 	log.Printf("connected to RabbitMQ")
 
 	// Send a message
-	msg := "Hello World"
-	_, err = amqplib.Send(conn, "test2", []byte(msg), "text/plain")
+	msg := SendMessage{"message": "Hello World!"}
+
+	byteData, err := json.Marshal(msg)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	_, err = amqplib.Send(conn, "test2", []byte(byteData), "application/json")
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -31,3 +40,5 @@ func main() {
 	log.Printf("message sent: %s", msg)
 
 }
+
+type SendMessage map[string]interface{}

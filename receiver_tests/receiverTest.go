@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 
 	amqplib "github.com/root27/go-rabbit"
@@ -15,25 +14,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	defer amqplib.CloseConnection(conn)
-
 	log.Printf("connected to RabbitMQ")
+
+	log.Printf("Messages waiting...")
 
 	// Receive a message
 
-	amqplib.Receive(conn, "test2", ConverttoJson)
-
-}
-
-var test map[string]interface{}
-
-func ConverttoJson(body []byte) {
-	err := json.Unmarshal(body, &test)
+	msgs, err := amqplib.Receive(conn, "test2")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Printf("message converted: %s", test)
+	for d := range msgs {
+
+		log.Printf("received a message: %s", d)
+
+		log.Printf("Type of data received: %T", d)
+	}
 
 }
