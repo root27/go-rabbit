@@ -10,7 +10,7 @@ It includes basic operations for Rabbitmq. These operations are:
 
 ```bash
 
-go get github.com/root27/amqplib
+go get github.com/root27/go-rabbit
 
 ```
 
